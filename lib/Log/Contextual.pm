@@ -53,13 +53,14 @@ sub get-logger ($package) {
       $Get-Logger ||
       %Default-Logger{$package} ||
       die q<no logger set!  you can't try to log something without a logger!>
-   )($package);
+   )();
 }
 
 sub set-logger($logger) is export {
    unless $logger.isa(Code) {
-      die 'logger was not a CodeRef or a logger object.  Please try again.'
-         unless $logger.does(Log::Contextual::Logger);
+      # I can't seem to get this typecheck to work :-/
+      #die 'logger was not a CodeRef or a logger object.  Please try again.'
+         #unless $logger.does(Log::Contextual::Logger);
       $logger = do { my $l = $logger; sub { $l } }
    }
 
@@ -68,19 +69,22 @@ sub set-logger($logger) is export {
    $Get-Logger = $logger;
 }
 
-sub with-logger is export {
-   my $logger = $_[0];
-   if(ref $logger ne 'CODE') {
-      die 'logger was not a CodeRef or a logger object.  Please try again.'
-         unless blessed($logger);
+sub with-logger($logger is copy, Code $fn) is export {
+   unless $logger.isa(Code) {
+      # I can't seem to get this typecheck to work :-/
+      #die 'logger was not a CodeRef or a logger object.  Please try again.'
+         #unless $logger.does(Log::Contextual::Logger);
       $logger = do { my $l = $logger; sub { $l } }
    }
-   local $Get-Logger = $logger;
-   $_[1]();
+   # fake temp (local) scoping
+   my $old = $Get-Logger;
+   $Get-Logger = $logger;
+   $fn();
+   $Get-Logger = $old;
 }
 
 sub do-log ($level, $logger, $code, *@values) {
-   $logger."$level"($code(@values)) if $logger."is-$level"();
+   $logger."$level"($code(|@values)) if $logger."is-$level"();
    @values
 }
 
@@ -96,14 +100,12 @@ sub do-logS {
    $value
 }
 
-#sub log_trace is export (&@) { _do_log( 'trace' => _get_logger( caller ), shift @_, @_) }
-sub log-debug (Code $fn, *@_) is export {
-   do-log( 'debug', get-logger( caller ), $fn, @_)
-}
-#sub log_info  is export (&@) { _do_log( 'info'  => _get_logger( caller ), shift @_, @_) }
-#sub log_warn  is export (&@) { _do_log( warn  => _get_logger( caller ), shift @_, @_) }
-#sub log_error is export (&@) { _do_log( error => _get_logger( caller ), shift @_, @_) }
-#sub log_fatal is export (&@) { _do_log( fatal => _get_logger( caller ), shift @_, @_) }
+sub log-trace (Code $fn, *@_) is export { do-log( 'trace', get-logger( caller ), $fn, @_) }
+sub log-debug (Code $fn, *@_) is export { do-log( 'debug', get-logger( caller ), $fn, @_) }
+sub log-info (Code $fn, *@_) is export { do-log( 'info', get-logger( caller ), $fn, @_) }
+sub log-warn (Code $fn, *@_) is export { do-log( 'warn', get-logger( caller ), $fn, @_) }
+sub log-error (Code $fn, *@_) is export { do-log( 'error', get-logger( caller ), $fn, @_) }
+sub log-fatal (Code $fn, *@_) is export { do-log( 'fatal', get-logger( caller ), $fn, @_) }
 
 #sub logS_trace is export (&$) { _do_logS( trace => _get_logger( caller ), $_[0], $_[1]) }
 #sub logS_debug is export (&$) { _do_logS( debug => _get_logger( caller ), $_[0], $_[1]) }
