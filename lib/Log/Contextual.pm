@@ -56,7 +56,7 @@ sub get-logger ($package) {
    )();
 }
 
-sub set-logger($logger) is export {
+sub set-logger($logger is copy) is export {
    unless $logger.isa(Code) {
       # I can't seem to get this typecheck to work :-/
       #die 'logger was not a CodeRef or a logger object.  Please try again.'

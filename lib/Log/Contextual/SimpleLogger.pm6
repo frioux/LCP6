@@ -14,7 +14,7 @@ for <trace debug info warn error fatal> -> $name {
 
 
 submethod BUILD(:$coderef, :@levels, :$levels-upto) {
-  $.coderef = $coderef;
+  $.coderef = $coderef || sub (*@_) { $*ERR.print(@_) };
 
   %!levels{$_} = 1 for @levels;
 
