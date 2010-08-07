@@ -30,13 +30,20 @@ ok(!defined %ran<error>, 'error does not get called');
 log-fatal { %ran<fatal>++ };
 ok(!defined %ran<fatal>, 'fatal does not get called');
 
-#{
-   #my $cap;
-   #local *STDERR = do { open my $fh, '>', \$cap; $fh };
+my $cap;
+class Output-Interceptor {
+    multi method print(*@a) { $cap = @a.join }
+    multi method say(*@a) { $cap = @a.join }
+}
+{
+   my $cap;
+   my $old = $*ERR;
+   $*ERR = Output-Interceptor.new();
 
-   #log_debug { 'frew' };
-   #is($cap, "[debug] frew\n", 'SimpleLogger outputs to STDERR correctly');
-#}
+   log-debug { 'frew' };
+   is($cap, "[debug] frew\n", 'SimpleLogger outputs to STDERR correctly');
+   $*ERR = $old
+}
 
 my $response;
 my $l2 = Log::Contextual::SimpleLogger.new(
@@ -45,10 +52,13 @@ my $l2 = Log::Contextual::SimpleLogger.new(
 );
 $l2.debug('station');
 is($response, "[debug] station\n", 'logger runs');
-#{
-   #local $SIG{__WARN__} = sub {}; # do this just to hide warning for tests
+{
+   my $old = $*ERR;
+   $*ERR = Output-Interceptor.new();
+
    set-logger($l2);
-#}
+   $*ERR = $old
+}
 log-trace { 'trace' };
 is($response, "[trace] trace\n", 'trace renders correctly');
 log-debug { 'debug' };
