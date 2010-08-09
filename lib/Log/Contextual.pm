@@ -100,57 +100,58 @@ sub do-logS {
    $value
 }
 
-sub log-trace (Code $fn, *@_) is export { do-log( 'trace', get-logger( caller ), $fn, @_) }
-sub log-debug (Code $fn, *@_) is export { do-log( 'debug', get-logger( caller ), $fn, @_) }
-sub log-info (Code $fn, *@_) is export { do-log( 'info', get-logger( caller ), $fn, @_) }
-sub log-warn (Code $fn, *@_) is export { do-log( 'warn', get-logger( caller ), $fn, @_) }
-sub log-error (Code $fn, *@_) is export { do-log( 'error', get-logger( caller ), $fn, @_) }
-sub log-fatal (Code $fn, *@_) is export { do-log( 'fatal', get-logger( caller ), $fn, @_) }
-
-#sub logS_trace is export (&$) { _do_logS( trace => _get_logger( caller ), $_[0], $_[1]) }
-#sub logS_debug is export (&$) { _do_logS( debug => _get_logger( caller ), $_[0], $_[1]) }
-#sub logS_info  is export (&$) { _do_logS( info  => _get_logger( caller ), $_[0], $_[1]) }
-#sub logS_warn  is export (&$) { _do_logS( warn  => _get_logger( caller ), $_[0], $_[1]) }
-#sub logS_error is export (&$) { _do_logS( error => _get_logger( caller ), $_[0], $_[1]) }
-#sub logS_fatal is export (&$) { _do_logS( fatal => _get_logger( caller ), $_[0], $_[1]) }
+for <debug info warn error fatal> {
+   eval 'sub log-' ~ $_ ~ ' (Code $fn, *@_) is export { do-log( q<' ~ $_ ~ '>, get-logger( caller ), $fn, @_) }';
+}
 
 
-#sub Dlog_trace is export (&@) {
-  #my $code = shift;
-  #local $_ = (@_?Data::Dumper::Concise::Dumper @_:'()');
-  #return _do_log( trace => _get_logger( caller ), $code, @_ );
-#}
+sub Dlog-trace (Code $code, *@_) is export {
+  my $old_ = $_;
+  $_ = @_??@_.perl!!q<()>;
+  my @ret = do-log( q<trace>, get-logger( caller ), $code, @_ );
+  $_ = $old_;
+  return @ret;
+}
 
-#sub Dlog_debug is export (&@) {
-  #my $code = shift;
-  #local $_ = (@_?Data::Dumper::Concise::Dumper @_:'()');
-  #return _do_log( debug => _get_logger( caller ), $code, @_ );
-#}
+sub Dlog-debug (Code $code, *@_) is export {
+  my $old_ = $_;
+  $_ = @_??@_.perl!!q<()>;
+  my @ret = do-log( q<debug>, get-logger( caller ), $code, @_ );
+  $_ = $old_;
+  return @ret;
+}
 
-#sub Dlog_info is export (&@) {
-  #my $code = shift;
-  #local $_ = (@_?Data::Dumper::Concise::Dumper @_:'()');
-  #return _do_log( info => _get_logger( caller ), $code, @_ );
-#}
+sub Dlog-info (Code $code, *@_) is export {
+  my $old_ = $_;
+  $_ = @_??@_.perl!!q<()>;
+  my @ret = do-log( q<info>, get-logger( caller ), $code, @_ );
+  $_ = $old_;
+  return @ret;
+}
 
-#sub Dlog_warn is export (&@) {
-  #my $code = shift;
-  #local $_ = (@_?Data::Dumper::Concise::Dumper @_:'()');
-  #return _do_log( warn => _get_logger( caller ), $code, @_ );
-#}
+sub Dlog-warn (Code $code, *@_) is export {
+  my $old_ = $_;
+  $_ = @_??@_.perl!!q<()>;
+  my @ret = do-log( q<warn>, get-logger( caller ), $code, @_ );
+  $_ = $old_;
+  return @ret;
+}
 
-#sub Dlog_error is export (&@) {
-  #my $code = shift;
-  #local $_ = (@_?Data::Dumper::Concise::Dumper @_:'()');
-  #return _do_log( error => _get_logger( caller ), $code, @_ );
-#}
+sub Dlog-error (Code $code, *@_) is export {
+  my $old_ = $_;
+  $_ = @_??@_.perl!!q<()>;
+  my @ret = do-log( q<error>, get-logger( caller ), $code, @_ );
+  $_ = $old_;
+  return @ret;
+}
 
-#sub Dlog_fatal is export (&@) {
-  #my $code = shift;
-  #local $_ = (@_?Data::Dumper::Concise::Dumper @_:'()');
-  #return _do_log( fatal => _get_logger( caller ), $code, @_ );
-#}
-
+sub Dlog-fatal (Code $code, *@_) is export {
+  my $old_ = $_;
+  $_ = @_??@_.perl!!q<()>;
+  my @ret = do-log( q<fatal>, get-logger( caller ), $code, @_ );
+  $_ = $old_;
+  return @ret;
+}
 
 #sub DlogS_trace is export (&$) {
   #local $_ = Data::Dumper::Concise::Dumper $_[1];
