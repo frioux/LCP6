@@ -100,7 +100,7 @@ sub do-logS {
    $value
 }
 
-for <debug info warn error fatal> {
+for <debug info warn error fatal trace> {
    eval 'sub log-' ~ $_ ~ ' (Code $fn, *@_) is export { do-log( q<' ~ $_ ~ '>, get-logger( caller ), $fn, @_) }';
 }
 
